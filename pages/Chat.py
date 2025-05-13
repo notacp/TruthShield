@@ -83,7 +83,7 @@ YOUR RESPONSE:"""
 
     try:
         if groq_api_key:
-            custom_httpx_client = httpx.Client(proxies=None)
+            custom_httpx_client = httpx.Client(trust_env=False)
             client = Groq(
                 api_key=groq_api_key,
                 http_client=custom_httpx_client
@@ -150,13 +150,13 @@ def get_llm_response(user_query, fact_check_results_str, chat_history):
     for turn in chat_history:
         messages.append({"role": turn["role"], "content": turn["content"]})
     # Add the current user query
-    messages.append({"role": "user", "content": user_query})
+    messages.append({"role": "user", "content": user_query}) 
 
 
     try:
         if groq_api_key:
             # Use Groq
-            custom_httpx_client = httpx.Client(proxies=None)
+            custom_httpx_client = httpx.Client(trust_env=False)
             client = Groq(
                 api_key=groq_api_key,
                 http_client=custom_httpx_client
