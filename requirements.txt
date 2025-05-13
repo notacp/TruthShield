@@ -1,6 +1,7 @@
-streamlit
-requests
-google-api-python-client
-groq
-google-generativeai 
-bs4
+streamlit==1.31.0
+requests==2.31.0
+google-api-python-client==2.115.0
+groq==0.4.1
+google-generativeai==0.3.2
+bs4==0.0.1
+beautifulsoup4==4.12.2

@@ -27,7 +27,7 @@ def call_fact_check_api(query: str = None, language_code: str = 'en', page_size:
     """
     api_key = st.secrets.get("GOOGLE_API_KEY")
     if not api_key:
-        return {"error": "API Key missing"}
+        return {"error": "API Key missing", "details": "Please configure GOOGLE_API_KEY in your secrets.toml file"}
 
     params = {
         'key': api_key,
@@ -40,7 +40,8 @@ def call_fact_check_api(query: str = None, language_code: str = 'en', page_size:
         params['pageToken'] = page_token
 
     try:
-        response = requests.get(API_ENDPOINT, params=params)
+        # Add timeout to prevent hanging requests
+        response = requests.get(API_ENDPOINT, params=params, timeout=10)
         response.raise_for_status() # Raises HTTPError for bad responses (4XX or 5XX)
 
         if not response.content:
@@ -57,6 +58,12 @@ def call_fact_check_api(query: str = None, language_code: str = 'en', page_size:
             error_detail += f" - {e.response.text}"
         return {"error": error_detail}
 
+    except requests.exceptions.Timeout:
+        return {"error": "API request timed out. Please try again later."}
+
+    except requests.exceptions.ConnectionError:
+        return {"error": "Connection error. Please check your internet connection and try again."}
+
     except requests.exceptions.RequestException as e:
         return {"error": f"API Request Error: {e}"}
 
@@ -66,7 +73,7 @@ def call_fact_check_api(query: str = None, language_code: str = 'en', page_size:
     except Exception as e:
         return {"error": f"An unexpected error occurred in API call: {type(e).__name__} - {e}"}
 
-def scrape_images_from_url(url, max_images=5, timeout=10):
+def scrape_images_from_url(url, max_images=5, timeout=5):
     """
     Fetches up to `max_images` image URLs from the given webpage URL.
     Tries Open Graph, Twitter Card, and <img> tags as fallbacks.
@@ -75,6 +82,8 @@ def scrape_images_from_url(url, max_images=5, timeout=10):
         response = requests.get(url, timeout=timeout)
         response.raise_for_status()
     except requests.exceptions.RequestException as e:
+        # Replace st.debug with a comment - no need to log this error to the UI
+        # st.debug(f"Error fetching images from {url}: {e}")
         return []
 
     soup = BeautifulSoup(response.text, 'html.parser')
@@ -99,6 +108,14 @@ def scrape_images_from_url(url, max_images=5, timeout=10):
     for img in soup.find_all('img', src=True):
         src = img['src']
         if src not in images:
+            # Make sure the URL is absolute
+            if not src.startswith(('http://', 'https://')):
+                try:
+                    # Try to make it absolute
+                    from urllib.parse import urljoin
+                    src = urljoin(url, src)
+                except Exception:
+                    continue
             images.append(src)
         if len(images) >= max_images:
             break

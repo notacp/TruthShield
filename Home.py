@@ -2,11 +2,23 @@ import streamlit as st
 from datetime import datetime
 import utils # Assuming utils.py is in the same directory
 
+# --- Streamlit Configuration ---
 st.set_page_config(
     page_title="TruthShield - Fact Check Home",
-    page_icon="🏠",
-    layout="wide"
+    page_icon="🛡️",
+    layout="wide",
+    initial_sidebar_state="auto",
+    menu_items={
+        'Get Help': 'https://github.com/yourusername/truthshield',
+        'Report a bug': 'https://github.com/yourusername/truthshield/issues',
+        'About': "# TruthShield\nA fact-checking application powered by Google Fact Check Tools API."
+    }
 )
+
+# Add Flaticon UIcon stylesheet
+st.markdown("""
+<link rel='stylesheet' href='https://cdn-uicons.flaticon.com/uicons-regular-straight/css/uicons-regular-straight.css'>
+""", unsafe_allow_html=True)
 
 # --- State Initialization ---
 # Initialize session state variables if they don't exist
@@ -24,6 +36,8 @@ if 'search_query' not in st.session_state: # Store the current search query
     st.session_state.search_query = ""
 if 'search_results' not in st.session_state: # Store search results
     st.session_state.search_results = None
+if 'api_error' not in st.session_state: # Track API errors
+    st.session_state.api_error = None
 
 # Reset loading state at the beginning of each run
 if st.session_state.loading:
@@ -33,7 +47,7 @@ if st.session_state.loading:
 col_title, col_lang = st.columns([4, 1])
 
 with col_title:
-    st.title("🏠 TruthShield: Recent Fact Checks")
+    st.markdown("<h1><i class='fi fi-rs-house-chimney'></i> TruthShield: Recent Fact Checks</h1>", unsafe_allow_html=True)
 
 with col_lang:
     # Language Selection
@@ -91,6 +105,11 @@ div.row-widget.stButton {
   position: relative !important;
   top: 30px !important;
 }
+
+/* Icon styling */
+i.fi {
+  margin-right: 0px;
+}
 </style>
 """, unsafe_allow_html=True)
 
@@ -110,11 +129,13 @@ with st.form(key="search_form", clear_on_submit=False):
     with col_search2:
         # Spacer to vertically align the button with the input field
         st.markdown("<div style='margin-top:28px'></div>", unsafe_allow_html=True)
-        search_button = st.form_submit_button("🔍 Search", use_container_width=True)
+        # Can't use HTML in form_submit_button, use plain text instead
+        search_button = st.form_submit_button("Search", use_container_width=True)
     
 # Handle clear search button separately (outside the form)
 if st.session_state.search_results is not None:
-    if st.button("❌ Clear Search", key="clear_search"):
+    # Use plain text instead of HTML
+    if st.button("Clear Search", key="clear_search"):
         clear_search()
         st.rerun()
 
@@ -196,10 +217,8 @@ if st.session_state.selected_claim_key is not None:
     if selected_index is not None and 0 <= selected_index < len(claims):
         selected_claim_data = claims[selected_index]
 
-        def go_back_to_gallery():
-            st.session_state.selected_claim_key = None
-        
-        st.button("⬅️ Back to Gallery", on_click=go_back_to_gallery, key="back_to_gallery_button")
+        # Use plain text instead of HTML
+        st.button("Back to Gallery", on_click=go_back_to_gallery, key="back_to_gallery_button")
         utils.render_claim_details(selected_claim_data)
     else:
         # This can happen if claims list changed (e.g. user navigated pages in another tab, or data changed)
@@ -252,18 +271,22 @@ else:
             st.info("No more fact checks found for the current filters.")
 
         # --- Pagination Buttons (Only show in Gallery View) ---
-        col1_page, col2_page = st.columns(2)
+        # Use a 3-column layout to position buttons with proper alignment
+        left_col, spacer_col, right_col = st.columns([1, 3, 1])
 
-        with col1_page:
+        with left_col:
             if len(st.session_state.home_page_history) > 1:
-                if st.button("⬅️ Previous Page", key="prev_page_gallery", on_click=go_to_previous_page):
+                # Use standard button with text arrow
+                if st.button("← Previous Page", key="prev_page_btn", on_click=go_to_previous_page):
                     pass
             else:
-                st.button("⬅️ Previous Page", disabled=True, key="prev_page_gallery_disabled")
+                st.button("← Previous Page", key="prev_page_disabled", disabled=True)
 
-        with col2_page:
+        # Right-align the Next Page button 
+        with right_col:
             if next_page_token:
-                if st.button("Next Page ➡️", key="next_page_gallery", on_click=go_to_next_page):
+                # Use standard button with text arrow
+                if st.button("Next Page →", key="next_page_btn", on_click=go_to_next_page):
                     pass
             else:
-                st.button("Next Page ➡️", disabled=True, key="next_page_gallery_disabled") 
+                st.button("Next Page →", key="next_page_disabled", disabled=True) 

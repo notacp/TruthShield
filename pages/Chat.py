@@ -4,12 +4,43 @@ import google.generativeai as genai
 from groq import Groq
 import json # To potentially format fact-check results for the LLM
 
+# --- Streamlit Configuration ---
 st.set_page_config(
     page_title="TruthShield - Chat with Fact Checker", 
-    page_icon="💬",
-    layout="wide"
+    page_icon="🛡️",
+    layout="wide",
+    initial_sidebar_state="auto",
+    menu_items={
+        'Get Help': 'https://github.com/yourusername/truthshield',
+        'Report a bug': 'https://github.com/yourusername/truthshield/issues',
+        'About': "# TruthShield\nA fact-checking chat assistant powered by Groq or Gemini."
+    }
 )
-st.title("💬 TruthShield: Chat Fact Checker")
+
+# Add Flaticon UIcon stylesheet
+st.markdown("""
+<link rel='stylesheet' href='https://cdn-uicons.flaticon.com/uicons-regular-straight/css/uicons-regular-straight.css'>
+""", unsafe_allow_html=True)
+
+# Add CSS for icon styling
+st.markdown("""
+<style>
+i.fi {
+  margin-right: 5px;
+}
+</style>
+""", unsafe_allow_html=True)
+
+st.markdown("<h1><i class='fi fi-rs-comments'></i> TruthShield: Chat Fact Checker</h1>", unsafe_allow_html=True)
+
+# Check API keys
+if not st.secrets.get("GOOGLE_API_KEY"):
+    st.error("⚠️ Missing Google API Key. Please configure GOOGLE_API_KEY in your secrets.toml file.")
+    st.stop()
+
+if not (st.secrets.get("GROQ_API_KEY") or st.secrets.get("GEMINI_API_KEY")):
+    st.warning("⚠️ Missing LLM API Key. Please configure either GROQ_API_KEY or GEMINI_API_KEY in your secrets.toml file.")
+    st.info("The chat functionality requires an LLM API key to work properly.")
 
 # --- Helper Functions ---
 
@@ -20,6 +51,10 @@ def extract_claim_topic(user_query):
     """
     groq_api_key = st.secrets.get("GROQ_API_KEY")
     gemini_api_key = st.secrets.get("GEMINI_API_KEY")
+
+    if not (groq_api_key or gemini_api_key):
+        st.error("No LLM API key configured. Chat functionality is limited.")
+        return "NO_CLAIM"
 
     # Simple prompt for claim extraction
     extraction_prompt = f"""Analyze the following user query: '{user_query}'
@@ -52,6 +87,7 @@ YOUR RESPONSE:"""
                 messages=[{"role": "user", "content": extraction_prompt}],
                 model="llama-3.1-8b-instant", # Using a smaller model for efficiency
                 temperature=0.1,
+                timeout=30,  # 30-second timeout
             )
             extracted_text = completion.choices[0].message.content.strip()
             return extracted_text
@@ -61,11 +97,11 @@ YOUR RESPONSE:"""
             response = model.generate_content(extraction_prompt)
             extracted_text = response.text.strip()
             return extracted_text
-        else:
-            return "NO_CLAIM" # Default to no claim if no API key
     except Exception as e:
         st.error(f"Claim Extraction Error: {e}")
         return "NO_CLAIM" # Return no claim on error
+    
+    return "NO_CLAIM" # Default fallback
 
 def format_fact_check_results(claims):
     """Formats claim results into a string for the LLM prompt."""
