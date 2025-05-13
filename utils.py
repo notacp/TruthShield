@@ -154,7 +154,7 @@ def render_gallery_card(claim_data, claim_key): # claim_key is important for uni
         
         if thumbnail_url:
             # Image fills the container width, maintain aspect ratio via CSS if needed by browser
-            st.image(thumbnail_url, width=-1, caption="") # Using width=-1 instead of use_container_width
+            st.image(thumbnail_url, use_container_width=True, caption="") # Using use_container_width
         else:
             # Placeholder that respects column width and has a decent aspect ratio
             st.markdown("""
@@ -247,7 +247,7 @@ def render_claim_details(claim_data):
     # For a dialog, often image above or a more compact layout is good.
     
     if thumbnail_url:
-        st.image(thumbnail_url, caption=publisher_name_for_alt, width=-1) # Using width=-1 instead of use_container_width
+        st.image(thumbnail_url, caption=publisher_name_for_alt, use_container_width=True) # Using use_container_width
     else:
         # Smaller placeholder for details view
         st.markdown("<div style='width:100%; height:150px; background-color:#f0f0f0; display:flex; flex-direction:column; align-items:center; justify-content:center; border-radius: 4px;'>🖼️<br/>No Image</div>", unsafe_allow_html=True)
