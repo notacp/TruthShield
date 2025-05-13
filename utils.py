@@ -4,6 +4,7 @@ import os
 from datetime import datetime # Added for display_claim
 import json # Import json for JSONDecodeError
 import re # Import re for regex-based HTML parsing
+from bs4 import BeautifulSoup
 
 # Ensure GOOGLE_API_KEY is set as an environment variable or in Streamlit secrets
 # GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY") or st.secrets.get("GOOGLE_API_KEY")
@@ -65,6 +66,45 @@ def call_fact_check_api(query: str = None, language_code: str = 'en', page_size:
     except Exception as e:
         return {"error": f"An unexpected error occurred in API call: {type(e).__name__} - {e}"}
 
+def scrape_images_from_url(url, max_images=5, timeout=10):
+    """
+    Fetches up to `max_images` image URLs from the given webpage URL.
+    Tries Open Graph, Twitter Card, and <img> tags as fallbacks.
+    """
+    try:
+        response = requests.get(url, timeout=timeout)
+        response.raise_for_status()
+    except requests.exceptions.RequestException as e:
+        return []
+
+    soup = BeautifulSoup(response.text, 'html.parser')
+    images = []
+
+    # Try Open Graph
+    og = soup.find('meta', property='og:image')
+    if og and og.get('content'):
+        images.append(og['content'])
+
+    # Try Twitter Card
+    tc = soup.find('meta', attrs={'name': 'twitter:image'})
+    if tc and tc.get('content'):
+        images.append(tc['content'])
+
+    # Fallback to <link rel="image_src">
+    link_img = soup.find('link', rel='image_src')
+    if link_img and link_img.get('href'):
+        images.append(link_img['href'])
+
+    # Fallback to regular <img>
+    for img in soup.find_all('img', src=True):
+        src = img['src']
+        if src not in images:
+            images.append(src)
+        if len(images) >= max_images:
+            break
+
+    return images[:max_images]
+
 def display_claim(claim):
     """Displays a single claim in a formatted card with a thumbnail."""
     with st.container(border=True):
@@ -83,56 +123,14 @@ def display_claim(claim):
             review_url = review.get('url')
 
             thumbnail_url = None
-            image_info = review.get('image')
-            if isinstance(image_info, dict):
-                thumbnail_url = image_info.get('url')
-            elif isinstance(image_info, list) and len(image_info) > 0 and isinstance(image_info[0], dict):
-                thumbnail_url = image_info[0].get('url')
-
-            if not thumbnail_url:
-                review_rating_info = review.get('reviewRating', {})
-                if isinstance(review_rating_info, dict):
-                    thumbnail_url = review_rating_info.get('imageUrl')
-                    if not thumbnail_url:
-                        rating_image_obj = review_rating_info.get('image')
-                        if isinstance(rating_image_obj, dict):
-                            thumbnail_url = rating_image_obj.get('url')
-
-            if not thumbnail_url:
-                publisher_info = review.get('publisher', {})
-                if isinstance(publisher_info, dict):
-                    publisher_image_obj = publisher_info.get('image')
-                    if isinstance(publisher_image_obj, dict):
-                        thumbnail_url = publisher_image_obj.get('url')
-                    elif isinstance(publisher_image_obj, list) and len(publisher_image_obj) > 0 and isinstance(publisher_image_obj[0], dict):
-                        thumbnail_url = publisher_image_obj[0].get('url')
             
-            # NEW: If no thumbnail_url found yet, try to scrape it from review_url
-            if not thumbnail_url and review_url:
-                try:
-                    page_response = requests.get(review_url, timeout=10) # Increased timeout
-                    page_response.raise_for_status()
-                    html_content = page_response.text
-
-                    # Try to find Open Graph image meta tag
-                    og_pattern = r'<meta\s+property=["']og:image["']\s+content=["'](.*?)["']\s*/?>'
-                    og_image_match = re.search(og_pattern, html_content, re.IGNORECASE)
-                    if og_image_match:
-                        thumbnail_url = og_image_match.group(1)
-                    else:
-                        # Fallback: Try to find Twitter card image meta tag
-                        twitter_pattern = r'<meta\s+name=["']twitter:image["']\s+content=["'](.*?)["']\s*/?>'
-                        twitter_image_match = re.search(twitter_pattern, html_content, re.IGNORECASE)
-                        if twitter_image_match:
-                            thumbnail_url = twitter_image_match.group(1)
-
-                except requests.exceptions.RequestException as e:
-                    # Using simple strings for warnings to avoid f-string parsing issues with linter
-                    warning_message = "Could not fetch review URL (" + review_url + ") for thumbnail: " + str(e)
-                    st.warning(warning_message)
-                except Exception as e: 
-                    warning_message = "Error processing review URL (" + review_url + ") for thumbnail: " + str(e)
-                    st.warning(warning_message)
+            # If review_url exists, try to scrape it for an image
+            if review_url:
+                image_urls = scrape_images_from_url(review_url)
+                if image_urls:
+                    thumbnail_url = image_urls[0]
+                else:
+                    thumbnail_url = None
 
             with col1:
                 if thumbnail_url:
@@ -223,4 +221,4 @@ def display_claim(claim):
 #         else:
 #             st.write("Failed to fetch results.")
 #     else:
-#         st.error("Please provide GOOGLE_API_KEY in .streamlit/secrets.toml") 
+#         st.error("Please provide GOOGLE_API_KEY in .streamlit/secrets.toml")

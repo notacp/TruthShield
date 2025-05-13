@@ -3,3 +3,4 @@ requests
 google-api-python-client
 groq
 google-generativeai 
+bs4
