@@ -4,8 +4,12 @@ import google.generativeai as genai
 from groq import Groq
 import json # To potentially format fact-check results for the LLM
 
-st.set_page_config(page_title="Chat with Fact Checker", page_icon="💬")
-st.title("💬 Chat Fact Checker")
+st.set_page_config(
+    page_title="TruthShield - Chat with Fact Checker", 
+    page_icon="💬",
+    layout="wide"
+)
+st.title("💬 TruthShield: Chat Fact Checker")
 
 # --- Helper Functions ---
 
