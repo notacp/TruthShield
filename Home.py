@@ -204,24 +204,36 @@ if st.session_state.search_results is None:
 if st.session_state.selected_claim_key is not None:
     # --- Detail View ---
     selected_index = None
+    claims_list_to_use = None # Determine which list of claims to use
+
+    # Determine if we are viewing a claim from search results or general gallery
+    if st.session_state.search_results is not None:
+        claims_list_to_use = st.session_state.search_results
+    elif api_response and 'claims' in api_response: # Check if gallery claims were loaded
+        claims_list_to_use = api_response.get('claims', [])
+    else: # Fallback if gallery claims somehow not loaded but we are in detail view without search
+        claims_list_to_use = []
+
+
     try:
-        # The key stored by render_gallery_card is the index
+        # The key stored by render_gallery_card is the index relative to the list it was rendered from
         selected_index = int(st.session_state.selected_claim_key)
     except (ValueError, TypeError):
         st.error("Invalid claim selection key. Returning to gallery.")
         st.session_state.selected_claim_key = None
         st.rerun()
 
-    if selected_index is not None and 0 <= selected_index < len(claims):
-        selected_claim_data = claims[selected_index]
+    # Check selected_index against the determined claims list
+    if claims_list_to_use and selected_index is not None and 0 <= selected_index < len(claims_list_to_use):
+        selected_claim_data = claims_list_to_use[selected_index]
 
         # Use plain text instead of HTML
         st.button("Back to Gallery", on_click=go_back_to_gallery, key="back_to_gallery_button")
         utils.render_claim_details(selected_claim_data)
     else:
         # This can happen if claims list changed (e.g. user navigated pages in another tab, or data changed)
-        # or if the key was invalid.
-        st.warning("Could not display the selected claim. It might not be available on the current page. Returning to gallery.")
+        # or if the key was invalid, or the claims list wasn't available.
+        st.warning("Could not display the selected claim. It might not be available or the source list (gallery/search) is unclear. Returning to gallery.")
         st.session_state.selected_claim_key = None
         st.rerun()
 
