@@ -289,4 +289,4 @@ else:
                 if st.button("Next Page →", key="next_page_btn", on_click=go_to_next_page):
                     pass
             else:
-                st.button("Next Page →", key="next_page_disabled", disabled=True) 
+                st.button("Next Page →", key="next_page_disabled", disabled=True)
