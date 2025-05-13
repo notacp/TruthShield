@@ -3,6 +3,7 @@ import utils # Import the utility functions
 import google.generativeai as genai
 from groq import Groq
 import json # To potentially format fact-check results for the LLM
+from groq import DefaultHttpxClient # Add import
 
 # --- Streamlit Configuration ---
 st.set_page_config(
@@ -82,12 +83,14 @@ YOUR RESPONSE:"""
 
     try:
         if groq_api_key:
-            client = Groq(api_key=groq_api_key)
+            client = Groq(
+                api_key=groq_api_key,
+                http_client=DefaultHttpxClient() # Explicitly pass default client
+            )
             completion = client.chat.completions.create(
                 messages=[{"role": "user", "content": extraction_prompt}],
                 model="llama-3.1-8b-instant", # Using a smaller model for efficiency
                 temperature=0.1,
-                timeout=30,  # 30-second timeout
             )
             extracted_text = completion.choices[0].message.content.strip()
             return extracted_text
@@ -152,7 +155,10 @@ def get_llm_response(user_query, fact_check_results_str, chat_history):
     try:
         if groq_api_key:
             # Use Groq
-            client = Groq(api_key=groq_api_key)
+            client = Groq(
+                api_key=groq_api_key,
+                http_client=DefaultHttpxClient() # Explicitly pass default client
+            )
             chat_completion = client.chat.completions.create(
                 messages=messages,
                 model="llama-3.3-70b-versatile", # Or another suitable model
