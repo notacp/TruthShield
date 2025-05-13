@@ -1,0 +1,5 @@
+streamlit
+requests
+google-api-python-client
+groq
+google-generativeai 
