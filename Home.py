@@ -105,6 +105,11 @@ st.markdown("""
 i.fi {
   margin-right: 0px;
 }
+
+/* Vertically center form submit buttons */
+div[data-testid="stForm"] .stButton > button {
+  margin-top: 5px !important;
+}
 </style>
 """, unsafe_allow_html=True)
 
