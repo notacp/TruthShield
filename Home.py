@@ -100,11 +100,6 @@ st.markdown("""
   justify-content: center !important;
 }
 
-/* Make search input and buttons align on same line */
-div.row-widget.stButton {
-  position: relative !important;
-  top: 30px !important;
-}
 
 /* Icon styling */
 i.fi {
@@ -127,10 +122,8 @@ with st.form(key="search_form", clear_on_submit=False):
     with col_search1:
         search_query = st.text_input("Search for claims:", key="search_input", value=st.session_state.search_query)
     with col_search2:
-        # Spacer to vertically align the button with the input field
-        st.markdown("<div style='margin-top:28px'></div>", unsafe_allow_html=True)
         # Can't use HTML in form_submit_button, use plain text instead
-        search_button = st.form_submit_button("Search", use_container_width=True)
+        search_button = st.form_submit_button("Search")
     
 # Handle clear search button separately (outside the form)
 if st.session_state.search_results is not None:
