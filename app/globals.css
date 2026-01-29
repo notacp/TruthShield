@@ -1,0 +1,48 @@
+@import "tailwindcss";
+
+@theme {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-accent: var(--accent);
+  --color-accent-gold: var(--accent-gold);
+  
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --font-serif: var(--font-merriweather), ui-serif, Georgia, serif;
+}
+
+:root {
+  /* Dark "Guardian Tech" Theme by default */
+  --background: #050a14; /* Deep Navy/Black */
+  --foreground: #f1f5f9; /* Slate 100 */
+
+  --card: #0f172a; /* Slate 900 */
+  --card-foreground: #e2e8f0; /* Slate 200 */
+
+  --primary: #3b82f6; /* Electric Blue */
+  --primary-foreground: #ffffff;
+
+  --accent: #0ea5e9; /* Sky Blue */
+  --accent-gold: #f59e0b; /* Trusted Gold */
+}
+
+body {
+  background-color: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans);
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-serif);
+}
+
+/* Glassmorphism Utilities */
+.glass-panel {
+  background: rgba(15, 23, 42, 0.6);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}

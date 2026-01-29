@@ -1,93 +1,36 @@
-# TruthShield: Fact Checking Application
+This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
-A Streamlit application that allows users to search for and view fact checks from the Google Fact Check Tools API, as well as chat with an AI assistant about fact checking topics.
+## Getting Started
 
-## Features
+First, run the development server:
 
-- Browse recent fact checks with pagination
-- Search for specific fact checks
-- View detailed information about each fact check
-- Chat with an AI assistant to discuss and verify claims
-- Multi-language support (English, Hindi)
-
-## Setup
-
-### Prerequisites
-
-- Python 3.8+
-- Streamlit
-- A Google API key for the Fact Check Tools API
-- An LLM API key (Groq or Gemini) for the chat feature
-
-### Installation
-
-1. Clone this repository:
-   ```
-   git clone https://github.com/yourusername/truthshield.git
-   cd truthshield
-   ```
-
-2. Create a virtual environment and install dependencies:
-   ```
-   python -m venv env
-   source env/bin/activate  # On Windows: env\Scripts\activate
-   pip install -r requirements.txt
-   ```
-
-3. Set up your API keys:
-   
-   Create or modify the `.streamlit/secrets.toml` file:
-   ```toml
-   # .streamlit/secrets.toml
-   GOOGLE_API_KEY = "your_google_api_key"
-   
-   # Add ONE of these LLM API keys
-   GROQ_API_KEY = "your_groq_api_key"
-   # GEMINI_API_KEY = "your_gemini_api_key" 
-   ```
-
-## Running Locally
-
-Run the application locally with:
-
-```
-streamlit run Home.py
+```bash
+npm run dev
+# or
+yarn dev
+# or
+pnpm dev
+# or
+bun dev
 ```
 
-The application should open in your default web browser at `http://localhost:8501`.
+Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
-## Deployment
+You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
 
-### Deploy to Streamlit Cloud
+This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
 
-1. Push your code to a GitHub repository
+## Learn More
 
-2. Log in to [Streamlit Cloud](https://streamlit.io/cloud)
+To learn more about Next.js, take a look at the following resources:
 
-3. Create a new app:
-   - Connect your GitHub account
-   - Select your repository
-   - Set the main file path to `Home.py`
-   - Add your secrets in the Streamlit Cloud dashboard (under "Advanced settings" > "Secrets")
+- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
+- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
 
-4. Deploy your app
+You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
 
-### Deploy to Other Platforms
+## Deploy on Vercel
 
-The application can also be deployed to platforms like Heroku, AWS, GCP, or Azure:
+The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
 
-- Use the provided `requirements.txt` 
-- Set environment variables for your API keys
-- Set the command to run the application: `streamlit run Home.py`
-
-## Project Structure
-
-- `Home.py`: Main application page with fact check listing and search
-- `pages/Chat.py`: Chat interface for discussing fact checks
-- `utils.py`: Utility functions for API calls and UI components
-- `.streamlit/`: Configuration directory for Streamlit
-- `requirements.txt`: Application dependencies
-
-## License
-
-[MIT License](LICENSE) 
+Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
