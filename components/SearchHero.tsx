@@ -4,22 +4,35 @@ import { useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Search, Loader2 } from 'lucide-react';
 
-export default function SearchHero() {
+interface SearchHeroProps {
+    initialLang?: string;
+}
+
+export default function SearchHero({ initialLang = 'en' }: SearchHeroProps) {
     const router = useRouter();
     const searchParams = useSearchParams();
     const initialQuery = searchParams.get('query') || '';
     const [query, setQuery] = useState(initialQuery);
+    const [lang, setLang] = useState(initialLang);
     const [isSearching, setIsSearching] = useState(false);
 
     const handleSearch = (e: React.FormEvent) => {
         e.preventDefault();
-        if (!query.trim()) return;
 
         setIsSearching(true);
-        // Push new URL, page will refresh via Next.js
-        router.push(`/?query=${encodeURIComponent(query)}`);
-        // Minimal timeout to reset loading state if navigation is instant or to just show feedback
-        setTimeout(() => setIsSearching(false), 1000);
+        // Push new URL with language parameter
+        router.push(`/?query=${encodeURIComponent(query)}&lang=${lang}`);
+        setTimeout(() => setIsSearching(false), 800);
+    };
+
+    const placeholders: Record<string, string> = {
+        en: "Search a claim (e.g., 'solar flares internet')",
+        hi: "कोई दावा खोजें (उदा. 'कोरोना वायरस वैक्सीन')"
+    };
+
+    const buttonText: Record<string, string> = {
+        en: "Check",
+        hi: "जांचें"
     };
 
     return (
@@ -34,6 +47,21 @@ export default function SearchHero() {
                 TruthShield uses advanced fact-checking networks to validate claims in real-time.
             </p>
 
+            <div className="flex justify-center gap-2 mb-6 relative z-10">
+                <button
+                    onClick={() => { setLang('en'); router.push(`/?query=${query}&lang=en`); }}
+                    className={`px-4 py-1.5 rounded-full text-sm font-medium transition-all ${lang === 'en' ? 'bg-primary text-white shadow-lg shadow-primary/20' : 'bg-white/5 text-gray-400 hover:bg-white/10'}`}
+                >
+                    English
+                </button>
+                <button
+                    onClick={() => { setLang('hi'); router.push(`/?query=${query}&lang=hi`); }}
+                    className={`px-4 py-1.5 rounded-full text-sm font-medium transition-all ${lang === 'hi' ? 'bg-primary text-white shadow-lg shadow-primary/20' : 'bg-white/5 text-gray-400 hover:bg-white/10'}`}
+                >
+                    हिन्दी
+                </button>
+            </div>
+
             <form onSubmit={handleSearch} className="relative group">
                 <div className="absolute inset-0 bg-gradient-to-r from-primary to-accent-gold rounded-full blur opacity-25 group-hover:opacity-50 transition duration-500" />
                 <div className="relative flex items-center bg-[#0f172a] border border-white/10 rounded-full p-2 shadow-2xl transition-all duration-300 focus-within:ring-2 focus-within:ring-primary/50 focus-within:border-primary">
@@ -42,7 +70,7 @@ export default function SearchHero() {
                         type="text"
                         value={query}
                         onChange={(e) => setQuery(e.target.value)}
-                        placeholder="Search a claim (e.g., 'solar flares internet')"
+                        placeholder={placeholders[lang]}
                         className="flex-1 bg-transparent border-none outline-none text-white px-4 py-3 placeholder:text-gray-500 text-lg font-medium"
                     />
                     <button
@@ -50,10 +78,11 @@ export default function SearchHero() {
                         disabled={isSearching}
                         className="bg-primary hover:bg-blue-600 text-white rounded-full px-8 py-3 font-semibold transition-all duration-300 disabled:opacity-70 disabled:cursor-not-allowed"
                     >
-                        {isSearching ? <Loader2 className="animate-spin" /> : 'Check'}
+                        {isSearching ? <Loader2 className="animate-spin" /> : buttonText[lang]}
                     </button>
                 </div>
             </form>
+
         </div>
     );
 }

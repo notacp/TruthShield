@@ -9,9 +9,10 @@ interface FactGridProps {
     initialClaims: Claim[];
     initialNextPageToken?: string;
     query?: string;
+    lang?: string;
 }
 
-export default function FactGrid({ initialClaims, initialNextPageToken, query }: FactGridProps) {
+export default function FactGrid({ initialClaims, initialNextPageToken, query, lang = 'en' }: FactGridProps) {
     const [claims, setClaims] = useState<Claim[]>(initialClaims);
     const [nextPageToken, setNextPageToken] = useState<string | undefined>(initialNextPageToken);
     const [isLoadingMore, setIsLoadingMore] = useState(false);
@@ -30,6 +31,7 @@ export default function FactGrid({ initialClaims, initialNextPageToken, query }:
             const params = new URLSearchParams();
             if (query) params.append('query', query);
             params.append('pageToken', nextPageToken);
+            params.append('languageCode', lang);
 
             // Fetch via our internal API proxy to hide keys
             const res = await fetch(`/api/facts?${params.toString()}`);
@@ -52,8 +54,12 @@ export default function FactGrid({ initialClaims, initialNextPageToken, query }:
     if (!claims || claims.length === 0) {
         return (
             <div className="text-center py-20">
-                <h3 className="text-2xl font-serif text-gray-400">No results found.</h3>
-                <p className="text-gray-500 mt-2">Try a different search term.</p>
+                <h3 className="text-2xl font-serif text-gray-400">
+                    {lang === 'hi' ? 'कोई परिणाम नहीं मिला।' : 'No results found.'}
+                </h3>
+                <p className="text-gray-500 mt-2">
+                    {lang === 'hi' ? 'कोई दूसरा शब्द खोज कर देखें।' : 'Try a different search term.'}
+                </p>
             </div>
         );
     }
@@ -76,17 +82,18 @@ export default function FactGrid({ initialClaims, initialNextPageToken, query }:
                     >
                         {isLoadingMore ? (
                             <>
-                                <Loader2 className="animate-spin mr-2" size={20} /> Loading...
+                                <Loader2 className="animate-spin mr-2" size={20} /> {lang === 'hi' ? 'लोड हो रहा है...' : 'Loading...'}
                             </>
                         ) : (
                             <>
-                                Load More Results
+                                {lang === 'hi' ? 'और परिणाम लोड करें' : 'Load More Results'}
                                 <span className="ml-2 group-hover:translate-y-0.5 transition-transform duration-300">↓</span>
                             </>
                         )}
                     </button>
                 </div>
             )}
+
         </div>
     );
 }
