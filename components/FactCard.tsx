@@ -58,10 +58,9 @@ export default function FactCard({ claim }: FactCardProps) {
                     </div>
                 )}
 
-                {/* Badge Overlay */}
-                <div className={`absolute top-3 right-3 px-3 py-1 rounded-full text-xs font-semibold border flex items-center gap-1.5 backdrop-blur-md shadow-lg ${badgeColor}`}>
-                    <Icon size={14} />
-                    <span className="uppercase tracking-wider">{review?.textualRating || "Unrated"}</span>
+                {/* Publisher Overlay */}
+                <div className="absolute top-3 right-3 px-3 py-1 rounded-full text-xs font-semibold border backdrop-blur-md shadow-lg bg-slate-900/60 text-gray-200 border-white/10 truncate max-w-[150px]">
+                    {review?.publisher?.name || "Unknown Publisher"}
                 </div>
             </div>
 
@@ -77,10 +76,9 @@ export default function FactCard({ claim }: FactCardProps) {
                 </h3>
 
                 <div className="mt-auto pt-4 border-t border-white/5 flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                        <span className="text-sm text-gray-400 font-medium truncate max-w-[150px]">
-                            {review?.publisher?.name || "Unknown Publisher"}
-                        </span>
+                    <div className={`px-3 py-1 rounded-full text-xs font-semibold border flex items-center gap-1.5 ${badgeColor}`}>
+                        <Icon size={14} />
+                        <span className="uppercase tracking-wider">{review?.textualRating || "Unrated"}</span>
                     </div>
 
                     {review?.url && (
