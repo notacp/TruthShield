@@ -11,8 +11,8 @@ export async function GET(request: Request) {
 
     try {
         const response = await fetch(targetUrl, {
-            headers: { 'User-Agent': 'Mozilla/5.0 (compatible; TruthShieldBot/1.0;)' }, // Polite bot UA
-            next: { revalidate: 86400 } // Cache results for 24 hours
+            headers: { 'User-Agent': 'Mozilla/5.0 (compatible; TruthShieldBot/1.0;)' },
+            next: { revalidate: 86400 }
         });
 
         if (!response.ok) {
@@ -22,13 +22,13 @@ export async function GET(request: Request) {
         const html = await response.text();
         const $ = cheerio.load(html);
 
-        let imageUrl = $('meta[property="og:image"]').attr('content') ||
+        let imageUrl: string | undefined =
+            $('meta[property="og:image"]').attr('content') ||
             $('meta[name="twitter:image"]').attr('content') ||
             $('link[rel="image_src"]').attr('href') ||
-            $('img').first().attr('src'); // Fallback to first image
+            $('img').first().attr('src');
 
         if (imageUrl && !imageUrl.startsWith('http')) {
-            // Handle relative URLs
             try {
                 imageUrl = new URL(imageUrl, targetUrl).toString();
             } catch {
@@ -36,7 +36,7 @@ export async function GET(request: Request) {
             }
         }
 
-        return NextResponse.json({ imageUrl: imageUrl || null });
+        return NextResponse.json({ imageUrl: imageUrl ?? null });
 
     } catch (error) {
         return NextResponse.json({ error: "Scraping failed", details: String(error) }, { status: 500 });
