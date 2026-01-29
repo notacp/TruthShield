@@ -32,7 +32,7 @@ export async function GET(request: Request) {
             try {
                 imageUrl = new URL(imageUrl, targetUrl).toString();
             } catch {
-                imageUrl = null;
+                imageUrl = undefined;
             }
         }
 
