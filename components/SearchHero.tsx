@@ -40,8 +40,8 @@ export default function SearchHero({ initialLang = 'en' }: SearchHeroProps) {
             {/* Abstract Background Decoration */}
             <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[120%] h-[120%] bg-blue-500/10 blur-[100px] rounded-full pointer-events-none" />
 
-            <h1 className="relative text-5xl md:text-6xl font-serif font-bold text-white mb-6">
-                Verify the <span className="text-primary italic">Unseen</span>
+            <h1 className="relative text-5xl md:text-6xl font-serif font-bold text-white mb-6 group cursor-default">
+                Verify the <span className="text-primary italic group-hover:text-accent-gold transition-colors duration-300">Unseen</span>
             </h1>
             <p className="relative text-lg text-gray-400 mb-10 max-w-lg mx-auto">
                 TruthShield uses advanced fact-checking networks to validate claims in real-time.
