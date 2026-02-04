@@ -4,9 +4,43 @@ import SearchHero from '@/components/SearchHero';
 import FactGrid from '@/components/FactGrid';
 import SemanticAnswer from '@/components/SemanticAnswer';
 import { FactCheckResponse } from '@/types';
+import { GoogleGenerativeAI } from '@google/generative-ai';
 
 // Force dynamic rendering since we depend on searchParams
 export const dynamic = 'force-dynamic';
+
+async function refineQuery(rawQuery: string): Promise<string> {
+  if (!process.env.GEMINI_API_KEY) return rawQuery;
+
+  // Simple heuristic: If it's short, it's likely already a keyword search
+  if (rawQuery.split(' ').length < 4) return rawQuery;
+
+  try {
+    const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+    const model = genAI.getGenerativeModel({ model: "gemini-3-flash-preview" });
+
+    const prompt = `
+      Extract the core subject/keywords from this user question for a fact-check database search.
+      User Question: "${rawQuery}"
+      
+      Rules:
+      1. Remove "when", "what", "how", "latest", "recent", "news", etc.
+      2. Keep proper nouns and key actions.
+      3. Return ONLY the keywords.
+      
+      Example: "When was the latest pakistan attack" -> "Pakistan attack"
+      Example: "Is it true that Modi won" -> "Modi won"
+    `;
+
+    const result = await model.generateContent(prompt);
+    const refined = result.response.text().trim();
+    console.log(`Query Refined: "${rawQuery}" -> "${refined}"`); // Debug log
+    return refined;
+  } catch (error) {
+    console.error("Refinement failed:", error);
+    return rawQuery;
+  }
+}
 
 async function getFacts(query?: string, lang: string = 'en'): Promise<FactCheckResponse> {
   const apiKey = process.env.GOOGLE_API_KEY;
@@ -17,8 +51,12 @@ async function getFacts(query?: string, lang: string = 'en'): Promise<FactCheckR
   url.searchParams.append('key', apiKey);
   url.searchParams.append('languageCode', lang);
   url.searchParams.append('pageSize', '12'); // More initial items for grid
+
+  let effectiveQuery = query;
+
   if (query) {
-    url.searchParams.append('query', query);
+    effectiveQuery = await refineQuery(query);
+    url.searchParams.append('query', effectiveQuery);
   }
 
   if (!query) {
