@@ -63,17 +63,37 @@ async function getFacts(query?: string, lang: string = 'en'): Promise<FactCheckR
     url.searchParams.append('query', lang === 'hi' ? 'वायरल' : 'viral');
   }
 
-  try {
-    const res = await fetch(url.toString(), { cache: 'no-store' }); // Ensure fresh data on refresh
-    if (!res.ok) {
+  const maxRetries = 3;
+  let attempt = 0;
+
+  while (attempt < maxRetries) {
+    try {
+      const res = await fetch(url.toString(), { cache: 'no-store' }); // Ensure fresh data on refresh
+
+      if (res.ok) {
+        return await res.json();
+      }
+
+      // If rate limited or server error, wait and retry
+      if (res.status === 429 || res.status >= 500) {
+        console.warn(`API Error ${res.status}. Retrying attempt ${attempt + 1}/${maxRetries}...`);
+        attempt++;
+        await new Promise(resolve => setTimeout(resolve, 1000 * attempt)); // Exponential backoffish
+        continue;
+      }
+
       console.error("API Error", res.status, await res.text());
       return { claims: [] };
+
+    } catch (e) {
+      console.error("Fetch Error", e);
+      attempt++;
+      if (attempt >= maxRetries) return { claims: [] };
+      await new Promise(resolve => setTimeout(resolve, 1000 * attempt));
     }
-    return await res.json();
-  } catch (e) {
-    console.error("Fetch Error", e);
-    return { claims: [] };
   }
+
+  return { claims: [] };
 }
 
 export default async function Home({
